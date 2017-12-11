@@ -23,8 +23,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 @Module
 public class NetModule {
 
-    String mBaseUrl;
-    String mAccessToken;
+    private final String mBaseUrl;
+    private final String mAccessToken;
 
     // Constructor needs one parameter to instantiate.
     public NetModule(String baseUrl, String accessToken) {
@@ -36,8 +36,7 @@ public class NetModule {
     @Singleton
     Cache provideHttpCache(Application application) {
         int cacheSize = 10 * 1024 * 1024;
-        Cache cache = new Cache(application.getCacheDir(), cacheSize);
-        return cache;
+        return new Cache(application.getCacheDir(), cacheSize);
     }
 
     @Provides
@@ -76,7 +75,7 @@ public class NetModule {
 
     @Provides
     @Singleton
-    ApiClient provideClientManager(Retrofit retrofit) {
+    ApiClient provideApiClient(Retrofit retrofit) {
         return retrofit.create(ApiClient.class);
     }
 

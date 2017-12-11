@@ -13,9 +13,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.stone.nestdemo.NestDemoApp;
 import com.stone.nestdemo.R;
-import com.stone.nestdemo.network.ApiClientManager;
-import com.stone.nestdemo.network.response.Structure;
+import com.stone.nestdemo.network.response.Home;
+import com.stone.nestdemo.repository.HomeRepository;
 
 import javax.inject.Inject;
 
@@ -28,28 +29,31 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = "MainActivity";
 
+//    @Inject
+//    ApiClientManager mApiClientManager;
+
     @Inject
-    ApiClientManager mApiClientManager;
+    HomeRepository mRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-//        ((NestDemoApp) getApplication()).getNetComponent().inject(this);
+        ((NestDemoApp) getApplication()).getRepositoryComponent().inject(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Call<Structure> call = mApiClientManager.getDevices();
-                call.enqueue(new Callback<Structure>() {
+                Call<Home> call = mRepository.getHome();
+                call.enqueue(new Callback<Home>() {
                     @Override
-                    public void onResponse(Call<Structure> call, Response<Structure> response) {
+                    public void onResponse(Call<Home> call, Response<Home> response) {
                         if (response.isSuccessful()) {
-                            Structure struct = response.body();
+                            Home home = response.body();
                             Log.d(TAG, "STR");
 
                         } else {
@@ -58,7 +62,7 @@ public class MainActivity extends AppCompatActivity
                     }
 
                     @Override
-                    public void onFailure(Call<Structure> call, Throwable t) {
+                    public void onFailure(Call<Home> call, Throwable t) {
                         Log.d(TAG, t.getMessage());
                     }
                 });

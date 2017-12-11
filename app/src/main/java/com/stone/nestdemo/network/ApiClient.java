@@ -1,11 +1,14 @@
 package com.stone.nestdemo.network;
 
-import com.stone.nestdemo.network.response.Structure;
+import com.stone.nestdemo.network.response.Home;
+
+import javax.inject.Singleton;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
 
+@Singleton
 public interface ApiClient {
-    @GET("/devices")
-    Call<Structure> getDevices();
+    @GET("/")
+    Call<Home> getHome();
 }

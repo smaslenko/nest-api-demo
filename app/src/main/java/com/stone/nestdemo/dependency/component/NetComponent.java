@@ -1,9 +1,10 @@
 package com.stone.nestdemo.dependency.component;
 
-import com.stone.nestdemo.network.ApiClientManager;
-import com.stone.nestdemo.ui.MainActivity;
+import android.app.Application;
+
 import com.stone.nestdemo.dependency.module.AppModule;
 import com.stone.nestdemo.dependency.module.NetModule;
+import com.stone.nestdemo.network.ApiClientManager;
 
 import javax.inject.Singleton;
 
@@ -12,6 +13,12 @@ import dagger.Component;
 @Singleton
 @Component(modules = {AppModule.class, NetModule.class})
 public interface NetComponent {
-    void inject(MainActivity activity);
-    ApiClientManager getClientManager();
+
+    // region
+    // objects exposed to the dependent (RepositoryComponent) components
+    Application application();
+
+    ApiClientManager apiClientManager();
+    // endregion
+
 }

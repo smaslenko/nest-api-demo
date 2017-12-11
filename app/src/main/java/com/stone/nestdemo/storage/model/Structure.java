@@ -6,24 +6,22 @@ import android.arch.persistence.room.PrimaryKey;
 import com.google.gson.annotations.SerializedName;
 
 @Entity
-public class Camera {
+public class Structure {
 
     @PrimaryKey
     private int id;
-
-    @SerializedName("device_id")
-    private String deviceId;
 
     @SerializedName("structure_id")
     private String structureId;
 
     private String name;
 
-    @SerializedName("is_online")
-    private String isOnline;
+    @SerializedName("time_zone")
+    private String timeZone;
 
-    @SerializedName("web_url")
-    private String webUrl;
+//    private List<String> thermostats;
+//
+//    private List<String> cameras;
 
     public int getId() {
         return id;
@@ -31,14 +29,6 @@ public class Camera {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
     }
 
     public String getStructureId() {
@@ -57,19 +47,19 @@ public class Camera {
         this.name = name;
     }
 
-    public String getIsOnline() {
-        return isOnline;
+    public String getTimeZone() {
+        return timeZone;
     }
 
-    public void setIsOnline(String isOnline) {
-        this.isOnline = isOnline;
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 
-    public String getWebUrl() {
-        return webUrl;
-    }
-
-    public void setWebUrl(String webUrl) {
-        this.webUrl = webUrl;
-    }
+//    public List<String> getThermostats() {
+//        return thermostats;
+//    }
+//
+//    public List<String> getCameras() {
+//        return cameras;
+//    }
 }

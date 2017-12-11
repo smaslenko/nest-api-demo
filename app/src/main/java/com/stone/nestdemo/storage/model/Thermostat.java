@@ -10,6 +10,12 @@ public class Thermostat {
     @PrimaryKey
     private int id;
 
+    @SerializedName("device_id")
+    private String deviceId;
+
+    @SerializedName("structure_id")
+    private String structureId;
+
     private String name;
 
     private String humidity;
@@ -29,6 +35,22 @@ public class Thermostat {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
+
+    public String getStructureId() {
+        return structureId;
+    }
+
+    public void setStructureId(String structureId) {
+        this.structureId = structureId;
     }
 
     public String getName() {

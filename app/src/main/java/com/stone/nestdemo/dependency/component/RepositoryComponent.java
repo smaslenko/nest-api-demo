@@ -1,13 +1,15 @@
 package com.stone.nestdemo.dependency.component;
 
 import com.stone.nestdemo.dependency.module.RepositoryModule;
-
-import javax.inject.Singleton;
+import com.stone.nestdemo.dependency.scope.RepositoryScope;
+import com.stone.nestdemo.ui.MainActivity;
 
 import dagger.Component;
 
-@Singleton
-@Component(modules = {RepositoryModule.class})
+@RepositoryScope
+@Component(dependencies = {NetComponent.class}, modules = {RepositoryModule.class})
 public interface RepositoryComponent {
+
+    void inject(MainActivity activity);
 
 }
