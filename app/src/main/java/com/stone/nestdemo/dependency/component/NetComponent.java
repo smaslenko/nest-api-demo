@@ -19,6 +19,7 @@ public interface NetComponent {
     Application application();
 
     ApiClientManager apiClientManager();
+
     // endregion
 
 }

@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 import dagger.Module;
 import dagger.Provides;
 
-@Module
+@Module(includes = ViewModelModule.class)
 public class RepositoryModule {
 
     @RepositoryScope
@@ -25,7 +25,9 @@ public class RepositoryModule {
     @RepositoryScope
     @Provides
     HomeDatabase provideHomeDatabase(Application application) {
-        return Room.databaseBuilder(application, HomeDatabase.class, "home-db").build();
+        return Room.databaseBuilder(application, HomeDatabase.class, "home-db")
+            .fallbackToDestructiveMigration()
+            .build();
     }
 
     @RepositoryScope
@@ -33,4 +35,5 @@ public class RepositoryModule {
     HomeDao provideHomeDao(HomeDatabase database) {
         return database.getHomeDao();
     }
+
 }

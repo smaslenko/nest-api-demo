@@ -7,7 +7,7 @@ import com.stone.nestdemo.storage.model.Camera;
 import com.stone.nestdemo.storage.model.Structure;
 import com.stone.nestdemo.storage.model.Thermostat;
 
-@Database(entities = {Thermostat.class, Camera.class, Structure.class}, version = 1, exportSchema = false)
+@Database(entities = {Thermostat.class, Camera.class, Structure.class}, version = 2, exportSchema = false)
 public abstract class HomeDatabase extends RoomDatabase {
 
     public abstract HomeDao getHomeDao();

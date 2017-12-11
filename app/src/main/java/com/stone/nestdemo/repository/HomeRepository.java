@@ -60,7 +60,7 @@ public class HomeRepository {
                 if (response.isSuccessful()) {
                     Home home = response.body();
 
-                    DaoUtil.saveHome(mHomeDao, home);
+                    saveHomeToDb(home);
 
                 } else {
                     Log.d(TAG, "" + response.errorBody());
@@ -71,6 +71,12 @@ public class HomeRepository {
             public void onFailure(@NonNull Call<Home> call, @NonNull Throwable t) {
                 Log.d(TAG, t.getMessage());
             }
+        });
+    }
+
+    private void saveHomeToDb(Home home) {
+        mExecutor.execute(() -> {
+            DaoUtil.saveHome(mHomeDao, home);
         });
     }
 

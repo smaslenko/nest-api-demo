@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName;
 @Entity
 public class Structure {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int id;
 
     @SerializedName("structure_id")
