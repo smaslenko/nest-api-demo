@@ -2,15 +2,16 @@ package com.stone.nestdemo.storage.model;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
 
 @Entity
-public class Thermostat {
-    @PrimaryKey
-    private int id;
+public class Thermostat extends Device {
 
     @SerializedName("device_id")
+    @PrimaryKey
+    @NonNull
     private String deviceId;
 
     @SerializedName("structure_id")
@@ -28,14 +29,6 @@ public class Thermostat {
 
     @SerializedName("is_online")
     private String isOnline;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getDeviceId() {
         return deviceId;

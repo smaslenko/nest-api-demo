@@ -4,7 +4,7 @@ import android.arch.lifecycle.ViewModelProvider;
 
 import com.stone.nestdemo.dependency.module.RepositoryModule;
 import com.stone.nestdemo.dependency.scope.RepositoryScope;
-import com.stone.nestdemo.ui.MainActivity;
+import com.stone.nestdemo.ui.HomeActivity;
 
 import dagger.Component;
 
@@ -14,6 +14,6 @@ public interface RepositoryComponent {
 
     ViewModelProvider.Factory viewModelProviderFactory();
 
-    void inject(MainActivity activity);
+    void inject(HomeActivity activity);
 
 }

@@ -28,6 +28,14 @@ public class HomeViewModel extends ViewModel {
         initStructures();
         initThermostats();
         initCameras();
+
+        if (isEmpty()) {
+            refreshHome();
+        }
+    }
+
+    public void refreshHome() {
+        mRepository.refreshHome();
     }
 
     private void initStructures() {
@@ -49,6 +57,10 @@ public class HomeViewModel extends ViewModel {
             return;
         }
         mCameras = mRepository.getCameras();
+    }
+
+    private boolean isEmpty() {
+        return mStructures.getValue() == null || mStructures.getValue().isEmpty();
     }
 
     public LiveData<List<Structure>> getStructures() {

@@ -23,7 +23,7 @@ public interface HomeDao {
     @Insert(onConflict = REPLACE)
     void saveAllThermostats(List<Thermostat> thermostat);
 
-    @Query("SELECT * FROM Thermostat WHERE id = :deviceId")
+    @Query("SELECT * FROM Thermostat WHERE deviceId = :deviceId")
     LiveData<Thermostat> loadThermostat(String deviceId);
 
     @Query("SELECT * FROM Thermostat")
@@ -37,7 +37,7 @@ public interface HomeDao {
     @Insert(onConflict = REPLACE)
     void saveAllCameras(List<Camera> cameras);
 
-    @Query("SELECT * FROM Camera WHERE id = :deviceId")
+    @Query("SELECT * FROM Camera WHERE deviceId = :deviceId")
     LiveData<Camera> loadCamera(String deviceId);
 
     @Query("SELECT * FROM Camera")
@@ -48,7 +48,7 @@ public interface HomeDao {
     @Insert(onConflict = REPLACE)
     void saveAllStructures(List<Structure> structures);
 
-    @Query("SELECT * FROM Structure WHERE id = :structureId")
+    @Query("SELECT * FROM Structure WHERE structureId = :structureId")
     LiveData<Structure> loadStructure(String structureId);
 
     @Query("SELECT * FROM Structure")

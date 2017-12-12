@@ -2,16 +2,16 @@ package com.stone.nestdemo.storage.model;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
 
 @Entity
-public class Camera {
-
-    @PrimaryKey
-    private int id;
+public class Camera extends Device{
 
     @SerializedName("device_id")
+    @PrimaryKey
+    @NonNull
     private String deviceId;
 
     @SerializedName("structure_id")
@@ -24,14 +24,6 @@ public class Camera {
 
     @SerializedName("web_url")
     private String webUrl;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getDeviceId() {
         return deviceId;
