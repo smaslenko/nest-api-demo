@@ -2,15 +2,13 @@ package com.stone.nestdemo.repository;
 
 import android.arch.lifecycle.LiveData;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.stone.nestdemo.dependency.scope.RepositoryScope;
 import com.stone.nestdemo.network.ApiClientManager;
 import com.stone.nestdemo.network.response.Home;
 import com.stone.nestdemo.storage.HomeDao;
-import com.stone.nestdemo.storage.model.Camera;
+import com.stone.nestdemo.storage.model.Device;
 import com.stone.nestdemo.storage.model.Structure;
-import com.stone.nestdemo.storage.model.Thermostat;
 import com.stone.nestdemo.utils.DaoUtil;
 
 import java.util.List;
@@ -25,10 +23,12 @@ import retrofit2.Response;
 @RepositoryScope
 public class HomeRepository {
 
-    private static final String TAG = "HomeRepository";
     private final ApiClientManager mApiClientManager;
     private final HomeDao mHomeDao;
     private final Executor mExecutor;
+
+    @Inject
+    RepositoryOperationStatusManager mRepositoryStatusManager;
 
     @Inject HomeRepository(ApiClientManager apiClientManager, HomeDao dao, Executor executor) {
         mApiClientManager = apiClientManager;
@@ -36,45 +36,53 @@ public class HomeRepository {
         mExecutor = executor;
     }
 
-    public LiveData<List<Structure>> getStructures() {
+    public LiveData<List<Structure>> subscribeStructures() {
         // return a LiveData directly from the database.
         return mHomeDao.loadAllStructures();
     }
 
-    public LiveData<List<Thermostat>> getThermostats() {
+    public LiveData<List<Device>> subscribeDevicesInStructure(String structureId) {
         // return a LiveData directly from the database.
-        return mHomeDao.loadAllThermostats();
+        return DaoUtil.loadDevicesInStructure(mHomeDao, structureId);
     }
 
-    public LiveData<List<Camera>> getCameras() {
-        // return a LiveData directly from the database.
-        return mHomeDao.loadAllCameras();
+    public LiveData<RepositoryOperationStatusManager.Status> subscribeRepositoryOperationStatus() {
+        return mRepositoryStatusManager.getStatus();
     }
 
-    public void refreshHome() {
+    public void loadHome() {
+        mRepositoryStatusManager.setLoading("Home...");
+
         Call<Home> call = mApiClientManager.getHome();
-
         call.enqueue(new Callback<Home>() {
             @Override
             public void onResponse(@NonNull Call<Home> call, @NonNull Response<Home> response) {
                 if (response.isSuccessful()) {
-                    Home home = response.body();
-
-                    saveHomeToDb(home);
+                    saveHome(response.body());
+                    mRepositoryStatusManager.setSuccess("" + response.raw());
 
                 } else {
-                    Log.d(TAG, "" + response.errorBody());
+                    mRepositoryStatusManager.setError("" + response.raw());
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<Home> call, @NonNull Throwable t) {
-                Log.d(TAG, t.getMessage());
+                mRepositoryStatusManager.setError("" + t.getMessage());
             }
         });
     }
 
-    private void saveHomeToDb(Home home) {
+    public void checkHomeExistsAndLoad() {
+        mExecutor.execute(() -> {
+            List<Structure> structures = mHomeDao.checkStructures();
+            if (structures == null || structures.isEmpty()) {
+                loadHome();
+            }
+        });
+    }
+
+    private void saveHome(Home home) {
         mExecutor.execute(() -> {
             DaoUtil.saveHome(mHomeDao, home);
         });

@@ -4,9 +4,9 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModel;
 
 import com.stone.nestdemo.repository.HomeRepository;
-import com.stone.nestdemo.storage.model.Camera;
+import com.stone.nestdemo.repository.RepositoryOperationStatusManager;
+import com.stone.nestdemo.storage.model.Device;
 import com.stone.nestdemo.storage.model.Structure;
-import com.stone.nestdemo.storage.model.Thermostat;
 
 import java.util.List;
 
@@ -16,62 +16,37 @@ public class HomeViewModel extends ViewModel {
 
     private HomeRepository mRepository;
     private LiveData<List<Structure>> mStructures;
-    private LiveData<List<Thermostat>> mThermostats;
-    private LiveData<List<Camera>> mCameras;
 
     @Inject // HomeRepository provided by Dagger
     HomeViewModel(HomeRepository repository) {
         mRepository = repository;
     }
 
-    public void initAll() {
+    public void init() {
         initStructures();
-        initThermostats();
-        initCameras();
-
-        if (isEmpty()) {
-            refreshHome();
-        }
+        mRepository.checkHomeExistsAndLoad();
     }
 
-    public void refreshHome() {
-        mRepository.refreshHome();
+    public void loadHome() {
+        mRepository.loadHome();
+    }
+
+    public LiveData<List<Device>> subscribeDevicesInStructure(String structureId) {
+        return mRepository.subscribeDevicesInStructure(structureId);
+    }
+
+    public LiveData<List<Structure>> subscribeStructures() {
+        return mStructures;
+    }
+
+    public LiveData<RepositoryOperationStatusManager.Status> subscribeRepositoryStatus() {
+        return mRepository.subscribeRepositoryOperationStatus();
     }
 
     private void initStructures() {
         if (mStructures != null) {
             return;
         }
-        mStructures = mRepository.getStructures();
-    }
-
-    private void initThermostats() {
-        if (mThermostats != null) {
-            return;
-        }
-        mThermostats = mRepository.getThermostats();
-    }
-
-    private void initCameras() {
-        if (mCameras != null) {
-            return;
-        }
-        mCameras = mRepository.getCameras();
-    }
-
-    private boolean isEmpty() {
-        return mStructures.getValue() == null || mStructures.getValue().isEmpty();
-    }
-
-    public LiveData<List<Structure>> getStructures() {
-        return mStructures;
-    }
-
-    public LiveData<List<Thermostat>> getThermostats() {
-        return mThermostats;
-    }
-
-    public LiveData<List<Camera>> getCameras() {
-        return mCameras;
+        mStructures = mRepository.subscribeStructures();
     }
 }

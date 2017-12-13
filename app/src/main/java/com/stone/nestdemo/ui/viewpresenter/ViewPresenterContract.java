@@ -1,6 +1,8 @@
 package com.stone.nestdemo.ui.viewpresenter;
 
-import com.stone.nestdemo.storage.model.Structure;
+import android.arch.lifecycle.LifecycleOwner;
+
+import com.stone.nestdemo.ui.viewmodel.HomeViewModel;
 
 import java.util.List;
 
@@ -10,22 +12,34 @@ public interface ViewPresenterContract {
 
         void loadHome();
 
-        void loadThermostats(String structureId);
-
-        void loadCameras(String structureId);
-
-        void onStructuresLoaded(List<Structure> structures);
+        void observeStructures();
 
         void onStructureSelected(int position);
+
+        void onDeviceSelected(int position);
     }
 
-    public interface HoveView {
+    public interface HomeView {
 
         void updateSpinnerItems(List<String> items);
 
         void updateDrawerItems(List<String> items);
 
         void showProgress(boolean visible);
+
+        HomeViewModel homeViewModel();
+
+        LifecycleOwner lifecycleOwner();
+
+        void showError(String message);
+
+        /**
+         * Opens ore closes navigation Drawer
+         *
+         * @param visible open/close boolean trigger
+         * @return true if Drawer was open before this method call
+         */
+        boolean showDrawer(boolean visible);
     }
 
 }

@@ -1,8 +1,11 @@
 package com.stone.nestdemo.utils;
 
+import android.arch.lifecycle.LiveData;
+
 import com.stone.nestdemo.network.response.Home;
 import com.stone.nestdemo.storage.HomeDao;
 import com.stone.nestdemo.storage.model.Camera;
+import com.stone.nestdemo.storage.model.Device;
 import com.stone.nestdemo.storage.model.Structure;
 import com.stone.nestdemo.storage.model.Thermostat;
 
@@ -19,5 +22,13 @@ public class DaoUtil {
         dao.saveAllStructures(structures);
         dao.saveAllThermostats(thermostats);
         dao.saveAllCameras(cameras);
+    }
+
+    public static LiveData<List<Device>> loadDevicesInStructure(HomeDao dao, String structureId) {
+
+        LiveData<List<Thermostat>> thermostatsData = dao.loadThermostatsPerStructure(structureId);
+        LiveData<List<Camera>> camerasData = dao.loadCamerasPerStructure(structureId);
+
+        return LiveDataUtil.mergeListsAndMap(thermostatsData, camerasData);
     }
 }

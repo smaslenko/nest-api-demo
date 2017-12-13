@@ -1,6 +1,5 @@
 package com.stone.nestdemo.dependency.module;
 
-import android.app.Application;
 import android.support.annotation.NonNull;
 
 import com.google.gson.Gson;
@@ -9,14 +8,16 @@ import com.stone.nestdemo.network.ApiClient;
 
 import java.io.IOException;
 
+import javax.annotation.Nullable;
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import okhttp3.Cache;
-import okhttp3.Interceptor;
+import okhttp3.Authenticator;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.Route;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -30,13 +31,6 @@ public class NetModule {
     public NetModule(String baseUrl, String accessToken) {
         mBaseUrl = baseUrl;
         mAccessToken = accessToken;
-    }
-
-    @Provides
-    @Singleton
-    Cache provideHttpCache(Application application) {
-        int cacheSize = 10 * 1024 * 1024;
-        return new Cache(application.getCacheDir(), cacheSize);
     }
 
     @Provides
@@ -59,17 +53,16 @@ public class NetModule {
 
     @Provides
     @Singleton
-    OkHttpClient provideOkhttpClient(Cache cache) {
-        return new OkHttpClient().newBuilder().addNetworkInterceptor(new Interceptor() {
-            @Override
-            public okhttp3.Response intercept(@NonNull Chain chain) throws IOException {
-                Request originalRequest = chain.request();
-                Request.Builder builder = originalRequest.newBuilder().addHeader("Authorization", mAccessToken);
-                Request newRequest = builder.build();
-                return chain.proceed(newRequest);
-            }
-        })
-            .cache(cache)
+    OkHttpClient provideOkhttpClient() {
+        return new OkHttpClient().newBuilder()
+            .authenticator(new Authenticator() {
+                @Nullable @Override
+                public Request authenticate(@NonNull Route route, @NonNull Response response) throws IOException {
+                    Request.Builder builder = response.request().newBuilder().addHeader("Authorization", mAccessToken);
+                    return builder.build();
+                }
+            })
+            .retryOnConnectionFailure(true)
             .build();
     }
 

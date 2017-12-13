@@ -35,5 +35,4 @@ public class RepositoryModule {
     HomeDao provideHomeDao(HomeDatabase database) {
         return database.getHomeDao();
     }
-
 }
