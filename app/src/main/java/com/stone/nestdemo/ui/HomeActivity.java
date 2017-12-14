@@ -1,5 +1,6 @@
 package com.stone.nestdemo.ui;
 
+import android.annotation.SuppressLint;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
@@ -15,6 +16,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,8 +35,10 @@ import javax.inject.Inject;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, ViewPresenterContract.HomeView {
 
+    private static final String BUNDLE_KEY_STRUCTURE_POS = "bundle_key_structure_pos";
+    private static final String BUNDLE_KEY_DEVICE_POS = "bundle_key_device_pos";
     @Inject
-    ViewModelProvider.Factory viewModelFactory;
+    ViewModelProvider.Factory mViewModelFactory;
     private ViewPresenterContract.HomePresenter mHomePresenter;
     private HomeViewModel mHomeViewModel;
     private NavigationView mNavigationView;
@@ -82,6 +86,19 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    public void selectStructure(int position) {
+        System.out.println("xxx selectStructure: " + position);
+        mSpinner.setSelection(position);
+        mHomePresenter.onStructureSelected(position);
+    }
+
+    @Override
+    public void selectDevice(int position) {
+        mNavigationView.getMenu().getItem(position).setChecked(true);
+        onNavigationItemSelected(mNavigationView.getMenu().getItem(position));
+    }
+
+    @Override
     public boolean showDrawer(boolean visible) {
         boolean isOpen = mDrawer.isDrawerOpen(GravityCompat.START);
         if (visible) {
@@ -93,7 +110,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 mDrawer.closeDrawer(GravityCompat.START);
             }
         }
-
         return isOpen;
     }
 
@@ -119,7 +135,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         final Menu menu = mNavigationView.getMenu();
         menu.clear();
         for (int i = 0; i < items.size(); i++) {
-            menu.add(Menu.NONE, Menu.NONE, i, items.get(i));
+            menu.add(Menu.NONE, Menu.NONE, i, items.get(i)).setCheckable(true);
         }
     }
 
@@ -145,17 +161,58 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_refresh) {
+        if (item.getItemId() == R.id.action_refresh) {
             mHomePresenter.loadHome();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        saveSelectedPositions(outState);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        restoreSelectedPositions(savedInstanceState);
+    }
+
+    private void saveSelectedPositions(Bundle outState) {
+        outState.putInt(BUNDLE_KEY_STRUCTURE_POS, mHomePresenter.getSelectedStructurePosition());
+        outState.putInt(BUNDLE_KEY_DEVICE_POS, mHomePresenter.getSelectedDevicePosition());
+    }
+
+    private void restoreSelectedPositions(Bundle savedInstanceState) {
+        System.out.println("### restoreSelectedPositions");
+        if (savedInstanceState != null) {
+            int structurePos = savedInstanceState.getInt(BUNDLE_KEY_STRUCTURE_POS);
+            int devicePos = savedInstanceState.getInt(BUNDLE_KEY_DEVICE_POS);
+
+            if (mSpinner.getChildCount() > 0) {
+                // LiveData already fetched and set to Spinner
+                mSpinner.setSelection(structurePos);
+            } else {
+                // LiveData is not fetched yet,
+                // let Presenter handle pending positions
+                mHomePresenter.onStructureSelected(structurePos);
+            }
+
+            if (mNavigationView.getMenu().size() > 0) {
+                // LiveData already fetched and set to Drawer
+                mNavigationView.getMenu().getItem(devicePos).setChecked(true);
+            } else {
+                // LiveData is not fetched yet,
+                // let Presenter handle pending positions
+                mHomePresenter.onDeviceSelected(devicePos);
+            }
+        }
+    }
+
     private void initViewModel() {
-        mHomeViewModel = ViewModelProviders.of(this, viewModelFactory).get(HomeViewModel.class);
+        mHomeViewModel = ViewModelProviders.of(this, mViewModelFactory).get(HomeViewModel.class);
         mHomeViewModel.init();
     }
 
@@ -179,15 +236,39 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private void initSpinner() {
         mSpinner = mNavigationView.getHeaderView(0).findViewById(R.id.spinner);
-        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                mHomePresenter.onStructureSelected(position);
-            }
+        SpinnerInteractionListener listener = new SpinnerInteractionListener();
+        mSpinner.setOnTouchListener(listener);
+        mSpinner.setOnItemSelectedListener(listener);
+        selectStructure(0);
+    }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {}
-        });
+    /**
+     * There are many different events that can trigger the onItemSelected method (e.g. on device rotation it may be called twice ),
+     * they can affect some logic in Presenter.
+     * This custom listener is workaround for that behavior: it reacts only on user intended actions
+     */
+    private class SpinnerInteractionListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener {
+
+        boolean mUserSelect = false;
+
+        @SuppressLint("ClickableViewAccessibility") @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            mUserSelect = true;
+            return false;
+        }
+
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            if (mUserSelect) {
+                mHomePresenter.onStructureSelected(position);
+                mUserSelect = false;
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+        }
+
     }
 
 }

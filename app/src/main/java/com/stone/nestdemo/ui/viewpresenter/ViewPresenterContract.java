@@ -17,6 +17,10 @@ public interface ViewPresenterContract {
         void onStructureSelected(int position);
 
         void onDeviceSelected(int position);
+
+        int getSelectedStructurePosition();
+
+        int getSelectedDevicePosition();
     }
 
     public interface HomeView {
@@ -32,6 +36,10 @@ public interface ViewPresenterContract {
         LifecycleOwner lifecycleOwner();
 
         void showError(String message);
+
+        void selectStructure(int position);
+
+        void selectDevice(int position);
 
         /**
          * Opens ore closes navigation Drawer
