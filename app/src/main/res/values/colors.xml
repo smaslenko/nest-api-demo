@@ -6,4 +6,6 @@
   <color name="colorAccent">#7aff00</color>
 
   <color name="semi_white">#88ffffff</color>
+
+  <color name="home_gray">#383f48</color>
 </resources>

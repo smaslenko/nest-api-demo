@@ -17,6 +17,7 @@ public class Camera extends Device{
     @SerializedName("structure_id")
     private String structureId;
 
+    @SerializedName("name_long")
     private String name;
 
     @SerializedName("is_online")

@@ -8,7 +8,7 @@ import com.stone.nestdemo.dependency.component.NetComponent;
 import com.stone.nestdemo.dependency.component.RepositoryComponent;
 import com.stone.nestdemo.dependency.module.AppModule;
 import com.stone.nestdemo.dependency.module.NetModule;
-import com.stone.nestdemo.network.ApiClientManager;
+import com.stone.nestdemo.network.NetClientManager;
 
 public class NestDemoApp extends Application {
 
@@ -21,7 +21,7 @@ public class NestDemoApp extends Application {
 
         mNetComponent = DaggerNetComponent.builder()
             .appModule(new AppModule(this))
-            .netModule(new NetModule(ApiClientManager.BASE_URL, ApiClientManager.ACCESS_TOKEN))
+            .netModule(new NetModule(NetClientManager.BASE_URL, NetClientManager.ACCESS_TOKEN, NetClientManager.WEATHER_URL))
             .build();
 
         mRepositoryComponent = DaggerRepositoryComponent.builder()

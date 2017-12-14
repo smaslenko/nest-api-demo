@@ -19,6 +19,7 @@ public class Structure {
     @SerializedName("time_zone")
     private String timeZone;
 
+    @NonNull
     public String getStructureId() {
         return structureId;
     }

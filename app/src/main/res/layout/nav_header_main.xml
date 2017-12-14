@@ -32,10 +32,8 @@
       />
 
   <TextView
-      android:id="@+id/wheaterText"
+      android:id="@+id/weatherText"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="London +3"
       />
-
 </LinearLayout>

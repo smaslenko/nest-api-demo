@@ -54,6 +54,6 @@ public class RepositoryOperationStatusManager {
 
     private void setStatus(Status status, String message) {
         Log.d(TAG, message);
-        mStatus.setValue(status.setMessage(message));
+        mStatus.postValue(status.setMessage(message));
     }
 }

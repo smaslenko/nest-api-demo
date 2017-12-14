@@ -4,7 +4,7 @@ import android.app.Application;
 
 import com.stone.nestdemo.dependency.module.AppModule;
 import com.stone.nestdemo.dependency.module.NetModule;
-import com.stone.nestdemo.network.ApiClientManager;
+import com.stone.nestdemo.network.NetClientManager;
 
 import javax.inject.Singleton;
 
@@ -18,7 +18,7 @@ public interface NetComponent {
     // objects exposed to the dependent (RepositoryComponent) components
     Application application();
 
-    ApiClientManager apiClientManager();
+    NetClientManager apiClientManager();
 
     // endregion
 

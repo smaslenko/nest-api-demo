@@ -7,6 +7,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v4.widget.DrawerLayout;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.stone.nestdemo.NestDemoApp;
@@ -43,6 +45,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private HomeViewModel mHomeViewModel;
     private NavigationView mNavigationView;
     private Spinner mSpinner;
+    private TextView mWeatherText;
     private DrawerLayout mDrawer;
     private ArrayAdapter<String> mSpinnerAdapter;
     private ContentLoadingProgressBar mProgressBar;
@@ -69,7 +72,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public HomeViewModel homeViewModel() {
+    public HomeViewModel viewModel() {
         return mHomeViewModel;
     }
 
@@ -87,7 +90,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void selectStructure(int position) {
-        System.out.println("xxx selectStructure: " + position);
         mSpinner.setSelection(position);
         mHomePresenter.onStructureSelected(position);
     }
@@ -96,6 +98,13 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     public void selectDevice(int position) {
         mNavigationView.getMenu().getItem(position).setChecked(true);
         onNavigationItemSelected(mNavigationView.getMenu().getItem(position));
+    }
+
+    @Override
+    public void showDeviceFragment(String deviceId) {
+        DeviceFragment fragment = DeviceFragment.newInstance(deviceId);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.home_container, fragment).commit();
     }
 
     @Override
@@ -137,6 +146,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         for (int i = 0; i < items.size(); i++) {
             menu.add(Menu.NONE, Menu.NONE, i, items.get(i)).setCheckable(true);
         }
+    }
+
+    @Override
+    public void updateWeather(String temperature) {
+        mWeatherText.setText(temperature);
     }
 
     @Override
@@ -186,7 +200,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void restoreSelectedPositions(Bundle savedInstanceState) {
-        System.out.println("### restoreSelectedPositions");
         if (savedInstanceState != null) {
             int structurePos = savedInstanceState.getInt(BUNDLE_KEY_STRUCTURE_POS);
             int devicePos = savedInstanceState.getInt(BUNDLE_KEY_DEVICE_POS);
@@ -231,15 +244,17 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         mProgressBar = findViewById(R.id.progressBar);
 
-        initSpinner();
+        initHeader();
     }
 
-    private void initSpinner() {
+    private void initHeader() {
         mSpinner = mNavigationView.getHeaderView(0).findViewById(R.id.spinner);
         SpinnerInteractionListener listener = new SpinnerInteractionListener();
         mSpinner.setOnTouchListener(listener);
         mSpinner.setOnItemSelectedListener(listener);
         selectStructure(0);
+
+        mWeatherText = mNavigationView.getHeaderView(0).findViewById(R.id.weatherText);
     }
 
     /**

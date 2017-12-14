@@ -5,14 +5,13 @@ import android.util.Log;
 
 import com.stone.nestdemo.storage.model.Device;
 import com.stone.nestdemo.storage.model.Structure;
+import com.stone.nestdemo.ui.viewmodel.HomeViewModel;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HomePresenterImpl implements ViewPresenterContract.HomePresenter {
-    private static final String TAG = "HomePresenterImpl";
+public class HomePresenterImpl extends BasePresenter<ViewPresenterContract.HomeView, HomeViewModel> implements ViewPresenterContract.HomePresenter {
 
-    private ViewPresenterContract.HomeView mView;
     private List<Structure> mStructures;
     private List<Device> mDevices;
 
@@ -22,25 +21,23 @@ public class HomePresenterImpl implements ViewPresenterContract.HomePresenter {
     private boolean mDevicesPositionPending;
 
     public HomePresenterImpl(ViewPresenterContract.HomeView view) {
-        mView = view;
+        super(view);
     }
 
     @Override
     public void loadHome() {
         subscribeRepositoryOperationStatus();
-        mView.homeViewModel().loadHome();
+        viewModel().loadHome();
     }
 
     @Override
     public void observeStructures() {
-        mView.homeViewModel().subscribeStructures().observe(mView.lifecycleOwner(), this::structuresLoaded);
+        viewModel().subscribeStructures().observe(mView.lifecycleOwner(), this::structuresLoaded);
     }
 
     @Override
     public void onStructureSelected(int position) {
-        String methodName = Thread.currentThread().getStackTrace()[3].getMethodName();
-        String methodNamePrev = Thread.currentThread().getStackTrace()[4].getMethodName();
-        Log.d(TAG, methodNamePrev + "->" + methodName + "->onStructureSelected: " + position);
+        Log.d(TAG, "onStructureSelected: " + position);
 
         boolean ifChanged = mSelectedStructurePosition != position;
         mSelectedStructurePosition = position;
@@ -48,9 +45,11 @@ public class HomePresenterImpl implements ViewPresenterContract.HomePresenter {
         // Reset device selection if structure has changed
         if (ifChanged) mSelectedDevicePosition = 0;
 
-        if (mStructures != null) {
-            String structureId = mStructures.get(position).getStructureId();
-            mView.homeViewModel().subscribeDevicesInStructure(structureId).observe(mView.lifecycleOwner(), this::devicesLoaded);
+        if (mStructures != null && position < mStructures.size()) {
+            Structure structure = mStructures.get(position);
+            String structureId = structure.getStructureId();
+            viewModel().subscribeDevicesInStructure(structureId).observe(mView.lifecycleOwner(), this::devicesLoaded);
+            loadWeather(structure.getTimeZone());
         } else {
             mStructuresPositionPending = true;
         }
@@ -61,8 +60,9 @@ public class HomePresenterImpl implements ViewPresenterContract.HomePresenter {
         Log.d(TAG, "onDeviceSelected: " + position);
         mSelectedDevicePosition = position;
         if (mDevices != null) {
-            Device device = mDevices.get(position);
             mView.showDrawer(false);
+            Device device = mDevices.get(position);
+            mView.showDeviceFragment(device.getDeviceId());
         } else {
             mDevicesPositionPending = true;
         }
@@ -79,7 +79,7 @@ public class HomePresenterImpl implements ViewPresenterContract.HomePresenter {
     }
 
     private void subscribeRepositoryOperationStatus() {
-        mView.homeViewModel().subscribeRepositoryStatus().observe(mView.lifecycleOwner(), status -> {
+        viewModel().subscribeRepositoryStatus().observe(mView.lifecycleOwner(), status -> {
             if (status != null) {
                 switch (status) {
                     case Error:
@@ -91,7 +91,6 @@ public class HomePresenterImpl implements ViewPresenterContract.HomePresenter {
                         break;
                     case Success:
                         mView.showProgress(false);
-                        mView.showDrawer(false);
                         break;
                 }
             }
@@ -106,7 +105,7 @@ public class HomePresenterImpl implements ViewPresenterContract.HomePresenter {
             mView.updateSpinnerItems(structureNames);
             mView.showProgress(false);
 
-            if (mStructuresPositionPending) {
+            if (mStructuresPositionPending && mSelectedStructurePosition < mStructures.size()) {
                 mView.selectStructure(mSelectedStructurePosition);
                 mStructuresPositionPending = false;
             }
@@ -116,15 +115,11 @@ public class HomePresenterImpl implements ViewPresenterContract.HomePresenter {
     private void devicesLoaded(@NonNull List<Device> devices) {
         Log.d(TAG, "devicesLoaded: " + devices.size());
         mDevices = devices;
-        mView.updateDrawerItems(devices.stream().map(device -> {
-            String prefix = device.getClass().getSimpleName() + " ";
-            return prefix + device.getName();
-        }).collect(Collectors.toList()));
+        mView.updateDrawerItems(devices.stream().map(Device::getName).collect(Collectors.toList()));
 
         if (mDevicesPositionPending) {
             mView.selectDevice(mSelectedDevicePosition);
             mDevicesPositionPending = false;
         }
     }
-
 }

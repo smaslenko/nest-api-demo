@@ -1,14 +1,16 @@
 package com.stone.nestdemo.repository;
 
 import android.arch.lifecycle.LiveData;
-import android.support.annotation.NonNull;
+import android.arch.lifecycle.MutableLiveData;
 
 import com.stone.nestdemo.dependency.scope.RepositoryScope;
-import com.stone.nestdemo.network.ApiClientManager;
+import com.stone.nestdemo.network.NetClientManager;
 import com.stone.nestdemo.network.response.Home;
+import com.stone.nestdemo.network.response.Weather;
 import com.stone.nestdemo.storage.HomeDao;
 import com.stone.nestdemo.storage.model.Device;
 import com.stone.nestdemo.storage.model.Structure;
+import com.stone.nestdemo.storage.model.Thermostat;
 import com.stone.nestdemo.utils.DaoUtil;
 
 import java.util.List;
@@ -17,21 +19,22 @@ import java.util.concurrent.Executor;
 import javax.inject.Inject;
 
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 @RepositoryScope
 public class HomeRepository {
 
-    private final ApiClientManager mApiClientManager;
+    private final NetClientManager mNetClientManager;
     private final HomeDao mHomeDao;
     private final Executor mExecutor;
 
     @Inject
+    BaseCallbackWrapper mBaseCallbackWrapper;
+
+    @Inject
     RepositoryOperationStatusManager mRepositoryStatusManager;
 
-    @Inject HomeRepository(ApiClientManager apiClientManager, HomeDao dao, Executor executor) {
-        mApiClientManager = apiClientManager;
+    @Inject HomeRepository(NetClientManager netClientManager, HomeDao dao, Executor executor) {
+        mNetClientManager = netClientManager;
         mHomeDao = dao;
         mExecutor = executor;
     }
@@ -46,31 +49,33 @@ public class HomeRepository {
         return DaoUtil.loadDevicesInStructure(mHomeDao, structureId);
     }
 
+    public LiveData<Thermostat> subscribeThermostat(String deviceId) {
+        // return a LiveData directly from the database.
+        return mHomeDao.loadThermostat(deviceId);
+    }
+
     public LiveData<RepositoryOperationStatusManager.Status> subscribeRepositoryOperationStatus() {
         return mRepositoryStatusManager.getStatus();
     }
 
     public void loadHome() {
         mRepositoryStatusManager.setLoading("Home...");
+        Call<Home> call = mNetClientManager.getHome();
+        call.enqueue(mBaseCallbackWrapper.new BaseCallback<>(this::saveHome));
+    }
 
-        Call<Home> call = mApiClientManager.getHome();
-        call.enqueue(new Callback<Home>() {
-            @Override
-            public void onResponse(@NonNull Call<Home> call, @NonNull Response<Home> response) {
-                if (response.isSuccessful()) {
-                    saveHome(response.body());
-                    mRepositoryStatusManager.setSuccess("" + response.raw());
+    public void loadThermostat(String deviceId) {
+        mRepositoryStatusManager.setLoading("Thermostat...");
+        Call<Thermostat> call = mNetClientManager.getThermostat(deviceId);
+        call.enqueue(mBaseCallbackWrapper.new BaseCallback<>(this::saveThermostat));
+    }
 
-                } else {
-                    mRepositoryStatusManager.setError("" + response.raw());
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<Home> call, @NonNull Throwable t) {
-                mRepositoryStatusManager.setError("" + t.getMessage());
-            }
-        });
+    public LiveData<Weather> loadWeather(String city) {
+        mRepositoryStatusManager.setLoading("Weather...");
+        final MutableLiveData<Weather> data = new MutableLiveData<>();
+        Call<Weather> call = mNetClientManager.getWeather(city);
+        call.enqueue(mBaseCallbackWrapper.new BaseCallback<>(data::postValue));
+        return data;
     }
 
     public void checkHomeExistsAndLoad() {
@@ -88,4 +93,9 @@ public class HomeRepository {
         });
     }
 
+    private void saveThermostat(Thermostat thermostat) {
+        mExecutor.execute(() -> {
+            mHomeDao.saveThermostat(thermostat);
+        });
+    }
 }

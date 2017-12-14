@@ -17,6 +17,7 @@ public class Thermostat extends Device {
     @SerializedName("structure_id")
     private String structureId;
 
+    @SerializedName("name_long")
     private String name;
 
     private String humidity;

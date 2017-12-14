@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.stone.nestdemo.network.ApiClient;
+import com.stone.nestdemo.network.WeatherClient;
 
 import java.io.IOException;
 
@@ -25,12 +26,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class NetModule {
 
     private final String mBaseUrl;
+    private final String mWeatherUrl;
     private final String mAccessToken;
 
     // Constructor needs one parameter to instantiate.
-    public NetModule(String baseUrl, String accessToken) {
+    public NetModule(String baseUrl, String accessToken, String weatherUrl) {
         mBaseUrl = baseUrl;
         mAccessToken = accessToken;
+        mWeatherUrl = weatherUrl;
     }
 
     @Provides
@@ -39,16 +42,6 @@ public class NetModule {
         return new GsonBuilder()
             .setLenient()
             .create();
-    }
-
-    @Provides
-    @Singleton
-    Retrofit provideRetrofit(Gson gson, OkHttpClient okHttpClient) {
-        return new Retrofit.Builder()
-            .baseUrl(mBaseUrl)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build();
     }
 
     @Provides
@@ -68,8 +61,28 @@ public class NetModule {
 
     @Provides
     @Singleton
+    Retrofit provideRetrofit(Gson gson, OkHttpClient okHttpClient) {
+        return new Retrofit.Builder()
+            .baseUrl(mBaseUrl)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build();
+    }
+
+    @Provides
+    @Singleton
     ApiClient provideApiClient(Retrofit retrofit) {
         return retrofit.create(ApiClient.class);
+    }
+
+    @Provides
+    @Singleton
+    WeatherClient provideWeatherClient(Retrofit retrofit) {
+        Retrofit weatherRetrofit = retrofit.newBuilder()
+            .baseUrl(mWeatherUrl)
+            .client(new OkHttpClient())
+            .build();
+        return weatherRetrofit.create(WeatherClient.class);
     }
 
 }

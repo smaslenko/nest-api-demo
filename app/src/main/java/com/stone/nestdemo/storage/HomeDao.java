@@ -18,13 +18,16 @@ public interface HomeDao {
 
     //region Thermostats
     @Insert(onConflict = REPLACE)
-    void saveAllThermostats(List<Thermostat> thermostat);
+    void saveAllThermostats(List<Thermostat> thermostats);
+
+    @Insert(onConflict = REPLACE)
+    void saveThermostat(Thermostat thermostat);
 
     @Query("SELECT * FROM Thermostat WHERE structureId = :structureId")
     LiveData<List<Thermostat>> loadThermostatsPerStructure(String structureId);
 
-    @Query("SELECT * FROM Thermostat")
-    LiveData<List<Thermostat>> loadAllThermostats();
+    @Query("SELECT * FROM Thermostat WHERE deviceId = :deviceId")
+    LiveData<Thermostat> loadThermostat(String deviceId);
     //endregion
 
     //region Cameras

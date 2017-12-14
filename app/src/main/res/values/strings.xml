@@ -5,4 +5,9 @@
   <string name="navigation_drawer_close">Close navigation drawer</string>
 
   <string name="action_settings">Settings</string>
+
+  <!--Thermostat-->
+  <string name="humidity">INSIDE HUMIDITY</string>
+  <string name="outside_temp">OUTSIDE TEMP.</string>
+
 </resources>
