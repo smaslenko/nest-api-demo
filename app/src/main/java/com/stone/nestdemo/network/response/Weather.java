@@ -1,7 +1,6 @@
 package com.stone.nestdemo.network.response;
 
-import com.google.gson.annotations.SerializedName;
-
+@SuppressWarnings("unused")
 public class Weather {
 
     /*"main": {
@@ -13,11 +12,16 @@ public class Weather {
     },
     */
 
-    @SerializedName("main")
     private Main main;
+
+    private String name;
 
     public Main getMain() {
         return main;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public class Main {

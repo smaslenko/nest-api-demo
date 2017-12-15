@@ -7,6 +7,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.ContentLoadingProgressBar;
@@ -82,8 +83,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void showError(String message) {
-        Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
+    public void showError(String errorMessage) {
+        Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
     }
@@ -104,7 +105,16 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     public void showDeviceFragment(String deviceId) {
         DeviceFragment fragment = DeviceFragment.newInstance(deviceId);
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.home_container, fragment).commit();
+        fragmentManager.beginTransaction().replace(R.id.home_container, fragment, DeviceFragment.class.getSimpleName()).commit();
+    }
+
+    @Override
+    public void removeFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentByTag(DeviceFragment.class.getSimpleName());
+        if (fragment != null) {
+            fragmentManager.beginTransaction().remove(fragment).commit();
+        }
     }
 
     @Override
@@ -149,8 +159,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void updateWeather(String temperature) {
-        mWeatherText.setText(temperature);
+    public void updateWeather(String city, String temperature) {
+        String weather = city + " " + temperature;
+        mWeatherText.setText(weather);
     }
 
     @Override

@@ -16,7 +16,11 @@ public interface ViewPresenterContract {
 
         LifecycleOwner lifecycleOwner();
 
-        void updateWeather(String temperature);
+        void updateWeather(String city, String temperature);
+
+        void showProgress(boolean visible);
+
+        void showError(String errorMessage);
     }
 
     interface HomePresenter {
@@ -46,9 +50,7 @@ public interface ViewPresenterContract {
 
         void showDeviceFragment(String deviceId);
 
-        void showProgress(boolean visible);
-
-        void showError(String message);
+        void removeFragment();
 
         /**
          * Opens ore closes navigation Drawer
@@ -60,8 +62,6 @@ public interface ViewPresenterContract {
     }
 
     interface DevicePresenter {
-
-        void loadThermostat();
 
         void observeDevice();
 
@@ -77,6 +77,8 @@ public interface ViewPresenterContract {
         void updateTemperature(String temperature);
 
         void updateHumidity(String humidity);
+
+        void showTemperatureExceedMessage();
     }
 
 }

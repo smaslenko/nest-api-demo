@@ -15,6 +15,7 @@ public class RepositoryOperationStatusManager {
 
     public enum Status {
         Loading,
+        Redirection,
         Success,
         Error;
 
@@ -41,19 +42,23 @@ public class RepositoryOperationStatusManager {
     }
 
     void setLoading(@SuppressWarnings("SameParameterValue") String message) {
-        setStatus(Status.Loading, "Status LOADING: " + message);
+        setStatus(Status.Loading, message);
     }
 
     void setSuccess(String message) {
-        setStatus(Status.Success, "Status SUCCESS: " + message);
+        setStatus(Status.Success, message);
     }
 
     void setError(String message) {
-        setStatus(Status.Error, "Status ERROR: " + message);
+        setStatus(Status.Error, message);
+    }
+
+    void setRedirection(String url) {
+        setStatus(Status.Redirection, url);
     }
 
     private void setStatus(Status status, String message) {
-        Log.d(TAG, message);
+        Log.d(TAG, status.toString().toUpperCase() + " -> " + message);
         mStatus.postValue(status.setMessage(message));
     }
 }

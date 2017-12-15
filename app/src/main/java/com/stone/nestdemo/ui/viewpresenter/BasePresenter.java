@@ -17,7 +17,7 @@ abstract class BasePresenter<V extends ViewPresenterContract.BaseView<M>, M exte
         return mView.viewModel();
     }
 
-    void loadWeather(String timeZone) {
+    void subscribeWeather(String timeZone, boolean forceRefresh) {
         String[] parts = timeZone.split("/");
         String city;
         if (parts.length > 1) {
@@ -25,12 +25,31 @@ abstract class BasePresenter<V extends ViewPresenterContract.BaseView<M>, M exte
         } else {
             city = parts[0];
         }
-        viewModel().loadWeather(city).observe(mView.lifecycleOwner(), weather -> weatherLoaded(weather, city));
+        viewModel().subscribeWeather(city, forceRefresh).observe(mView.lifecycleOwner(), this::weatherLoaded);
     }
 
-    private void weatherLoaded(Weather weather, String city) {
-        int tempInt = weather.getMain().getTemp().intValue();
-        String temp = city + " " + tempInt + "°";
-        mView.updateWeather(temp);
+    void subscribeRepositoryOperationStatus() {
+        viewModel().subscribeRepositoryStatus().observe(mView.lifecycleOwner(), status -> {
+            if (status != null) {
+                switch (status) {
+                    case Error:
+                        mView.showProgress(false);
+                        mView.showError(status.getMessage());
+                        break;
+                    case Loading:
+                        mView.showProgress(true);
+                        break;
+                    case Success:
+                        mView.showProgress(false);
+                        break;
+                }
+            }
+        });
+    }
+
+    private void weatherLoaded(Weather weather) {
+        int temp = weather.getMain().getTemp().intValue();
+        String tempStr = temp + "°";
+        mView.updateWeather(weather.getName(), tempStr);
     }
 }

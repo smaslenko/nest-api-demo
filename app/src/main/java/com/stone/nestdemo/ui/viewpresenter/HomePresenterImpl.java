@@ -3,6 +3,7 @@ package com.stone.nestdemo.ui.viewpresenter;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.stone.nestdemo.storage.model.Camera;
 import com.stone.nestdemo.storage.model.Device;
 import com.stone.nestdemo.storage.model.Structure;
 import com.stone.nestdemo.ui.viewmodel.HomeViewModel;
@@ -43,13 +44,16 @@ public class HomePresenterImpl extends BasePresenter<ViewPresenterContract.HomeV
         mSelectedStructurePosition = position;
 
         // Reset device selection if structure has changed
-        if (ifChanged) mSelectedDevicePosition = 0;
+        if (ifChanged) {
+            mSelectedDevicePosition = 0;
+            mView.removeFragment();
+        }
 
         if (mStructures != null && position < mStructures.size()) {
             Structure structure = mStructures.get(position);
             String structureId = structure.getStructureId();
             viewModel().subscribeDevicesInStructure(structureId).observe(mView.lifecycleOwner(), this::devicesLoaded);
-            loadWeather(structure.getTimeZone());
+            subscribeWeather(structure.getTimeZone(), true);
         } else {
             mStructuresPositionPending = true;
         }
@@ -62,7 +66,11 @@ public class HomePresenterImpl extends BasePresenter<ViewPresenterContract.HomeV
         if (mDevices != null) {
             mView.showDrawer(false);
             Device device = mDevices.get(position);
-            mView.showDeviceFragment(device.getDeviceId());
+            if (device instanceof Camera) {
+                mView.removeFragment();
+            } else {
+                mView.showDeviceFragment(device.getDeviceId());
+            }
         } else {
             mDevicesPositionPending = true;
         }
@@ -76,25 +84,6 @@ public class HomePresenterImpl extends BasePresenter<ViewPresenterContract.HomeV
     @Override
     public int getSelectedDevicePosition() {
         return mSelectedDevicePosition;
-    }
-
-    private void subscribeRepositoryOperationStatus() {
-        viewModel().subscribeRepositoryStatus().observe(mView.lifecycleOwner(), status -> {
-            if (status != null) {
-                switch (status) {
-                    case Error:
-                        mView.showProgress(false);
-                        mView.showError(status.getMessage());
-                        break;
-                    case Loading:
-                        mView.showProgress(true);
-                        break;
-                    case Success:
-                        mView.showProgress(false);
-                        break;
-                }
-            }
-        });
     }
 
     private void structuresLoaded(List<Structure> structures) {

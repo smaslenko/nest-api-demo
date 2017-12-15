@@ -2,7 +2,6 @@ package com.stone.nestdemo.ui.viewmodel;
 
 import android.arch.lifecycle.LiveData;
 
-import com.stone.nestdemo.repository.RepositoryOperationStatusManager;
 import com.stone.nestdemo.storage.model.Thermostat;
 
 import javax.inject.Inject;
@@ -20,7 +19,11 @@ public class DeviceViewModel extends BaseViewModel {
         return mRepository.subscribeThermostat(deviceId);
     }
 
-    public LiveData<RepositoryOperationStatusManager.Status> subscribeRepositoryStatus() {
-        return mRepository.subscribeRepositoryOperationStatus();
+    public LiveData<String> subscribeTimeZone(String structureId) {
+        return mRepository.subscribeTimeZone(structureId);
+    }
+
+    public void setTemperature(String deviceId, double temperature) {
+        mRepository.putTemperature(deviceId, temperature, "");
     }
 }

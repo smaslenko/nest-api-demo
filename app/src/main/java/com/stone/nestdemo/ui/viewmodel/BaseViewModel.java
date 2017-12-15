@@ -18,12 +18,8 @@ public class BaseViewModel extends ViewModel {
         return mRepository.subscribeRepositoryOperationStatus();
     }
 
-    public LiveData<Weather> loadWeather(String city) {
-        return mRepository.loadWeather(city);
+    public LiveData<Weather> subscribeWeather(String city, boolean forceRefresh) {
+        return mRepository.subscribeWeather(city, forceRefresh);
     }
 
-//    @Inject // HomeRepository provided by Dagger
-//    BaseViewModel(HomeRepository repository) {
-//        mRepository = repository;
-//    }
 }

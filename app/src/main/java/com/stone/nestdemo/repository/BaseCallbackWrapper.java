@@ -1,6 +1,7 @@
 package com.stone.nestdemo.repository;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.stone.nestdemo.dependency.scope.RepositoryScope;
 
@@ -25,10 +26,12 @@ public class BaseCallbackWrapper {
 
     public class BaseCallback<T> implements Callback<T> {
 
-        private SaveObjectProvider<T> mSaveObjectProvider;
+        private final SaveObjectProvider<T> mSaveObjectProvider;
+        private final RedirectProvider mRedirectProvider;
 
-        BaseCallback(SaveObjectProvider<T> saveObjectProvider) {
+        BaseCallback(SaveObjectProvider<T> saveObjectProvider, RedirectProvider redirectProvider) {
             mSaveObjectProvider = saveObjectProvider;
+            mRedirectProvider = redirectProvider;
         }
 
         @Override
@@ -40,8 +43,25 @@ public class BaseCallbackWrapper {
                 mRepositoryStatusManager.setSuccess("" + response.raw());
 
             } else {
-                mRepositoryStatusManager.setError("" + response.raw());
+                if (!handle307(response)) {
+                    mRepositoryStatusManager.setError("" + response.raw());
+                }
             }
+        }
+
+        private boolean handle307(Response<T> response) {
+            if (response.code() == 307) {
+                String location = response.headers().get("Location");
+
+                if (!TextUtils.isEmpty(location)) {
+                    if (mRedirectProvider != null) {
+                        mRepositoryStatusManager.setRedirection(location);
+                        mRedirectProvider.onRedirectRequired(location);
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         @Override
@@ -52,6 +72,10 @@ public class BaseCallbackWrapper {
 
     public interface SaveObjectProvider<T> {
         void onCanSave(T obj);
+    }
+
+    public interface RedirectProvider {
+        void onRedirectRequired(String url);
     }
 
 }

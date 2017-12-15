@@ -5,6 +5,7 @@ import android.arch.lifecycle.MutableLiveData;
 
 import com.stone.nestdemo.dependency.scope.RepositoryScope;
 import com.stone.nestdemo.network.NetClientManager;
+import com.stone.nestdemo.network.request.TargetTemperatureRequest;
 import com.stone.nestdemo.network.response.Home;
 import com.stone.nestdemo.network.response.Weather;
 import com.stone.nestdemo.storage.HomeDao;
@@ -32,6 +33,7 @@ public class HomeRepository {
 
     @Inject
     RepositoryOperationStatusManager mRepositoryStatusManager;
+    private MutableLiveData<Weather> mWeatherData;
 
     @Inject HomeRepository(NetClientManager netClientManager, HomeDao dao, Executor executor) {
         mNetClientManager = netClientManager;
@@ -54,28 +56,49 @@ public class HomeRepository {
         return mHomeDao.loadThermostat(deviceId);
     }
 
+    public LiveData<String> subscribeTimeZone(String structureId) {
+        // return a LiveData directly from the database.
+        return mHomeDao.loadTimeZone(structureId);
+    }
+
     public LiveData<RepositoryOperationStatusManager.Status> subscribeRepositoryOperationStatus() {
         return mRepositoryStatusManager.getStatus();
     }
 
+    public void putTemperature(String deviceId, double temperature, String url) {
+        mRepositoryStatusManager.setLoading("PUT Temperature: " + temperature);
+        TargetTemperatureRequest request = new TargetTemperatureRequest(temperature);
+        Call<TargetTemperatureRequest> call = mNetClientManager.putTemperature(deviceId, request, url);
+        call.enqueue(mBaseCallbackWrapper.new BaseCallback<>(
+            obj -> {
+                dbUpdateTemperature(deviceId, obj.getTargetTemperature());
+            },
+            redirectUrl -> {
+                putTemperature(deviceId, temperature, redirectUrl);
+            }));
+    }
+
     public void loadHome() {
-        mRepositoryStatusManager.setLoading("Home...");
+        mRepositoryStatusManager.setLoading("GET Home");
         Call<Home> call = mNetClientManager.getHome();
-        call.enqueue(mBaseCallbackWrapper.new BaseCallback<>(this::saveHome));
+        call.enqueue(mBaseCallbackWrapper.new BaseCallback<>(this::dbSaveHome, newRequest -> {
+        }));
     }
 
     public void loadThermostat(String deviceId) {
-        mRepositoryStatusManager.setLoading("Thermostat...");
+        mRepositoryStatusManager.setLoading("GET Thermostat");
         Call<Thermostat> call = mNetClientManager.getThermostat(deviceId);
-        call.enqueue(mBaseCallbackWrapper.new BaseCallback<>(this::saveThermostat));
+        call.enqueue(mBaseCallbackWrapper.new BaseCallback<>(this::dbSaveThermostat, null));
     }
 
-    public LiveData<Weather> loadWeather(String city) {
-        mRepositoryStatusManager.setLoading("Weather...");
-        final MutableLiveData<Weather> data = new MutableLiveData<>();
-        Call<Weather> call = mNetClientManager.getWeather(city);
-        call.enqueue(mBaseCallbackWrapper.new BaseCallback<>(data::postValue));
-        return data;
+    public LiveData<Weather> subscribeWeather(String city, boolean forceRefresh) {
+        if(mWeatherData == null || forceRefresh) {
+            mRepositoryStatusManager.setLoading("GET Weather");
+            mWeatherData = new MutableLiveData<>();
+            Call<Weather> call = mNetClientManager.getWeather(city);
+            call.enqueue(mBaseCallbackWrapper.new BaseCallback<>(mWeatherData::postValue, null));
+        }
+        return mWeatherData;
     }
 
     public void checkHomeExistsAndLoad() {
@@ -87,15 +110,21 @@ public class HomeRepository {
         });
     }
 
-    private void saveHome(Home home) {
+    private void dbSaveHome(Home home) {
         mExecutor.execute(() -> {
             DaoUtil.saveHome(mHomeDao, home);
         });
     }
 
-    private void saveThermostat(Thermostat thermostat) {
+    private void dbSaveThermostat(Thermostat thermostat) {
         mExecutor.execute(() -> {
             mHomeDao.saveThermostat(thermostat);
+        });
+    }
+
+    private void dbUpdateTemperature(String deviceId, double temperature) {
+        mExecutor.execute(() -> {
+            mHomeDao.updateTemperature(deviceId, temperature);
         });
     }
 }

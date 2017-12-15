@@ -56,6 +56,8 @@ public class NetModule {
                 }
             })
             .retryOnConnectionFailure(true)
+            .followRedirects(true)
+            .followSslRedirects(true)
             .build();
     }
 

@@ -9,5 +9,6 @@
   <!--Thermostat-->
   <string name="humidity">INSIDE HUMIDITY</string>
   <string name="outside_temp">OUTSIDE TEMP.</string>
+  <string name="temperature_exceed_message">Celsius must be between 9 and 32!</string>
 
 </resources>

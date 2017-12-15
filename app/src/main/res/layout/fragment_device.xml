@@ -17,9 +17,7 @@
         android:id="@+id/nameText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ellipsize="marquee"
         android:gravity="center"
-        android:singleLine="true"
         android:text="Thermostat (D529F)"
         android:textColor="@android:color/white"
         android:textSize="@dimen/text_medium"
@@ -28,12 +26,13 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:gravity="center"
         android:orientation="horizontal"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
         >
 
       <ImageButton
+          android:id="@+id/minusButton"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:src="@android:drawable/arrow_down_float"
@@ -53,6 +52,7 @@
           />
 
       <ImageButton
+          android:id="@+id/plusButton"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:src="@android:drawable/arrow_up_float"
@@ -87,7 +87,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/humidity"
-            android:textColor="@android:color/white"
+            android:textColor="@color/semi_white"
             android:textSize="@dimen/text_small"
             />
 
@@ -112,7 +112,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/outside_temp"
-            android:textColor="@android:color/white"
+            android:textColor="@color/semi_white"
             android:textSize="@dimen/text_small"
             />
 
@@ -121,5 +121,22 @@
     </LinearLayout>
 
   </LinearLayout>
+
+  <FrameLayout
+      android:id="@+id/progressLayout"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@color/semi_white"
+      android:visibility="gone"
+      >
+
+    <android.support.v4.widget.ContentLoadingProgressBar
+        style="?android:progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        />
+
+  </FrameLayout>
 
 </FrameLayout>

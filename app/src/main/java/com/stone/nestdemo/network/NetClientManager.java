@@ -1,5 +1,8 @@
 package com.stone.nestdemo.network;
 
+import android.text.TextUtils;
+
+import com.stone.nestdemo.network.request.TargetTemperatureRequest;
 import com.stone.nestdemo.network.response.Home;
 import com.stone.nestdemo.network.response.Weather;
 import com.stone.nestdemo.storage.model.Thermostat;
@@ -34,6 +37,14 @@ public class NetClientManager {
 
     public Call<Thermostat> getThermostat(String deviceId) {
         return mApiClient.getThermostat(deviceId);
+    }
+
+    public Call<TargetTemperatureRequest> putTemperature(String deviceId, TargetTemperatureRequest body, String url) {
+        if(TextUtils.isEmpty(url)) {
+            return mApiClient.putTemperature(deviceId, body);
+        } else {
+            return mApiClient.putTemperatureRedirect(url, body);
+        }
     }
 
     public Call<Weather> getWeather(String city) {

@@ -28,6 +28,9 @@ public interface HomeDao {
 
     @Query("SELECT * FROM Thermostat WHERE deviceId = :deviceId")
     LiveData<Thermostat> loadThermostat(String deviceId);
+
+    @Query("UPDATE Thermostat SET targetTemp = :temperature  WHERE deviceId = :deviceId")
+    void updateTemperature(String deviceId, double temperature);
     //endregion
 
     //region Cameras
@@ -50,6 +53,9 @@ public interface HomeDao {
 
     @Query("SELECT * FROM Structure")
     LiveData<List<Structure>> loadAllStructures();
+
+    @Query("SELECT timeZone FROM Structure WHERE structureId = :structureId")
+    LiveData<String> loadTimeZone(String structureId);
 
     @Query("SELECT * FROM Structure")
     List<Structure> checkStructures();
